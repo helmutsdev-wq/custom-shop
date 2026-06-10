@@ -1,0 +1,60 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker
+docker/php/xdebug.ini
+
+# Magento
+backend/app/etc/env.php
+backend/app/etc/config.php
+backend/var/
+backend/vendor/
+backend/pub/static/_cache/
+backend/pub/static/frontend/
+backend/pub/static/adminhtml/
+backend/pub/static/deployed_version.txt
+backend/setup/
+backend/dev/
+backend/generated/
+backend/var/log/
+backend/var/cache/
+backend/var/page_cache/
+backend/var/session/
+backend/var/tmp/
+backend/var/import/
+backend/var/export/
+backend/var/backups/
+backend/var/composer_home/
+backend/auth.json
+/auth.json
+
+# Node
+frontend/node_modules/
+frontend/.nuxt/
+frontend/.output/
+frontend/dist/
+
+# Magento generated media
+backend/pub/media/catalog/product/cache/
+backend/pub/media/downloadable/
+backend/pub/media/import/
+backend/pub/media/theme_customization/
+backend/pub/media/logo/
+backend/pub/media/favicon/
+backend/pub/media/captcha/
+backend/pub/media/wysiwyg/
+backend/pub/media/attribute/
+backend/pub/media/email/
+backend/pub/media/tmp/
+backend/pub/media/custom_options/
+
+# Env
+.env
+docker/nginx/certs/
