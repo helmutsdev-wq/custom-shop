@@ -18,7 +18,7 @@ async function handleAddToCart(sku: string) {
     await addToCart(sku, 1)
     toast.value = 'Added to cart!'
     setTimeout(() => (toast.value = null), 3000)
-  } catch {
+  } catch (e) {
     toast.value = 'Failed to add to cart'
     setTimeout(() => (toast.value = null), 3000)
   }

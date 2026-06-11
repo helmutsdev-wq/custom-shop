@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const store = useMagentoStore()
+const { removeFromCart } = useMagento()
 const router = useRouter()
 
 onMounted(async () => {
@@ -16,10 +17,14 @@ const cartTotal = computed(() => {
   }).format(grand.value)
 })
 
+function productUrl(sku: string): string {
+  return `/product/${sku}`
+}
+
 const isEmpty = computed(() => cartItems.value.length === 0)
 
 async function removeItem(itemId: string) {
-  console.log('Remove item:', itemId)
+  await removeFromCart(itemId)
 }
 
 function formatPrice(value: number, currency: string): string {
@@ -51,7 +56,7 @@ function formatPrice(value: number, currency: string): string {
           :key="item.id"
           class="flex items-center gap-4 p-4 card"
         >
-          <NuxtLink :to="`/product/${item.product.sku}`" class="w-24 h-24 rounded-xl overflow-hidden bg-obscure-bg-secondary shrink-0">
+          <NuxtLink :to="productUrl(item.product.sku)" class="w-24 h-24 rounded-xl overflow-hidden bg-obscure-bg-secondary shrink-0">
             <img
               v-if="item.product.image?.url"
               :src="item.product.image.url"
@@ -67,7 +72,7 @@ function formatPrice(value: number, currency: string): string {
 
           <div class="flex-1 min-w-0">
             <NuxtLink
-              :to="`/product/${item.product.sku}`"
+              :to="productUrl(item.product.sku)"
               class="font-medium text-white hover:text-violet-400 transition-colors line-clamp-2"
             >
               {{ item.product.name }}

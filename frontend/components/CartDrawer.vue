@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const store = useMagentoStore()
+const { removeFromCart } = useMagento()
 const router = useRouter()
+
+function productUrl(sku: string): string {
+  return `/product/${sku}`
+}
 
 const isOpen = ref(false)
 
@@ -17,8 +22,7 @@ const cartTotal = computed(() => {
 const isEmpty = computed(() => cartItems.value.length === 0)
 
 async function removeItem(itemId: string) {
-  // TODO: Implement remove from cart
-  console.log('Remove item:', itemId)
+  await removeFromCart(itemId)
 }
 
 function goToCart() {
@@ -109,7 +113,7 @@ defineExpose({ open: () => (isOpen.value = true) })
 
                 <div class="flex-1 min-w-0">
                   <NuxtLink
-                    :to="`/product/${item.product.sku}`"
+                    :to="productUrl(item.product.sku)"
                     class="font-medium text-obscure-text-primary hover:text-violet-400 transition-colors line-clamp-2"
                     @click="isOpen = false"
                   >

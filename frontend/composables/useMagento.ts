@@ -5,9 +5,6 @@ import {
   GET_PRODUCT_DETAIL,
   GET_FEATURED_PRODUCTS,
   SEARCH_PRODUCTS,
-  CREATE_CART,
-  ADD_TO_CART,
-  GET_CART,
   SET_SHIPPING_ADDRESS,
   SET_SHIPPING_METHOD,
   PLACE_ORDER,
@@ -15,18 +12,28 @@ import {
 
 export function useMagento() {
   const store = useMagentoStore()
+  const nuxtApp = useNuxtApp()
+  const client = computed(() => nuxtApp._apolloClients?.default as any)
+
+  function getClient() {
+    if (!client.value) throw new Error('Apollo client not available')
+    return client.value
+  }
 
   async function getCategories() {
-    const { data } = await useAsyncQuery(GET_CATEGORIES)
-    return data.value?.categories?.items ?? []
+    const result = await getClient().query({
+      query: GET_CATEGORIES,
+      fetchPolicy: 'no-cache',
+    })
+    return result?.data?.categories?.items ?? []
   }
 
   async function getCategory(categoryId: string) {
-    const { data } = await useAsyncQuery(
-      GET_CATEGORY,
-      { id: parseInt(categoryId) },
-    )
-    return data.value?.category ?? null
+    const result = await getClient().query({
+      query: GET_CATEGORY,
+      variables: { id: parseInt(categoryId) },
+    })
+    return result?.data?.category ?? null
   }
 
   async function getProductsByCategory(
@@ -34,35 +41,51 @@ export function useMagento() {
     pageSize = 20,
     currentPage = 1,
   ) {
-    const { data } = await useAsyncQuery(
-      GET_PRODUCTS_BY_CATEGORY,
-      { categoryId, pageSize, currentPage },
-    )
-    return data.value?.products ?? { items: [], total_count: 0 }
+    const result = await getClient().query({
+      query: GET_PRODUCTS_BY_CATEGORY,
+      variables: { categoryId, pageSize, currentPage },
+    })
+    return result?.data?.products ?? { items: [], total_count: 0 }
   }
 
   async function getProductDetail(sku: string) {
-    const { data } = await useAsyncQuery(
-      GET_PRODUCT_DETAIL,
-      { sku },
-    )
-    return data.value?.products?.items?.[0] ?? null
+    const result = await getClient().query({
+      query: GET_PRODUCT_DETAIL,
+      variables: { sku },
+    })
+    const product = result?.data?.products?.items?.[0]
+    if (product) return product
+
+    const parts = sku.split('-')
+    while (parts.length > 1) {
+      parts.pop()
+      const parentSku = parts.join('-')
+      const retry = await getClient().query({
+        query: GET_PRODUCT_DETAIL,
+        variables: { sku: parentSku },
+      })
+      if (retry?.data?.products?.items?.[0]) {
+        return retry.data.products.items[0]
+      }
+    }
+
+    return null
   }
 
   async function getFeaturedProducts(pageSize = 8) {
-    const { data } = await useAsyncQuery(
-      GET_FEATURED_PRODUCTS,
-      { pageSize },
-    )
-    return data.value?.products?.items ?? []
+    const result = await getClient().query({
+      query: GET_FEATURED_PRODUCTS,
+      variables: { pageSize },
+    })
+    return result?.data?.products?.items ?? []
   }
 
   async function searchProducts(search: string, pageSize = 20, currentPage = 1) {
-    const { data } = await useAsyncQuery(
-      SEARCH_PRODUCTS,
-      { search, pageSize, currentPage },
-    )
-    return data.value?.products ?? { items: [], total_count: 0, page_info: null }
+    const result = await getClient().query({
+      query: SEARCH_PRODUCTS,
+      variables: { search, pageSize, currentPage },
+    })
+    return result?.data?.products ?? { items: [], total_count: 0, page_info: null }
   }
 
   async function addToCart(sku: string, quantity = 1) {
@@ -71,6 +94,10 @@ export function useMagento() {
 
   async function getCart() {
     return store.cart
+  }
+
+  async function removeFromCart(itemId: string) {
+    return store.removeFromCart(itemId)
   }
 
   async function setShippingAddress(address: {
@@ -83,25 +110,31 @@ export function useMagento() {
     telephone: string
   }) {
     const id = await store.ensureCart()
-    const { mutate } = useMutation(SET_SHIPPING_ADDRESS)
-    const result = await mutate({ cartId: id, ...address })
-    if (result?.error) throw new Error(result.error.message)
+    const result = await getClient().mutate({
+      mutation: SET_SHIPPING_ADDRESS,
+      variables: { cartId: id, ...address },
+    })
+    if (result?.errors?.length) throw new Error(result.errors[0].message)
     return result?.data?.setShippingAddressesOnCart?.cart ?? null
   }
 
   async function setShippingMethod(carrierCode: string, methodCode: string) {
     const id = await store.ensureCart()
-    const { mutate } = useMutation(SET_SHIPPING_METHOD)
-    const result = await mutate({ cartId: id, carrierCode, methodCode })
-    if (result?.error) throw new Error(result.error.message)
+    const result = await getClient().mutate({
+      mutation: SET_SHIPPING_METHOD,
+      variables: { cartId: id, carrierCode, methodCode },
+    })
+    if (result?.errors?.length) throw new Error(result.errors[0].message)
     return result?.data?.setShippingMethodsOnCart?.cart ?? null
   }
 
   async function placeOrder() {
     const id = await store.ensureCart()
-    const { mutate } = useMutation(PLACE_ORDER)
-    const result = await mutate({ cartId: id })
-    if (result?.error) throw new Error(result.error.message)
+    const result = await getClient().mutate({
+      mutation: PLACE_ORDER,
+      variables: { cartId: id },
+    })
+    if (result?.errors?.length) throw new Error(result.errors[0].message)
 
     store.cartId.value = null
     store.cart = null
@@ -118,6 +151,7 @@ export function useMagento() {
     searchProducts,
     addToCart,
     getCart,
+    removeFromCart,
     setShippingAddress,
     setShippingMethod,
     placeOrder,

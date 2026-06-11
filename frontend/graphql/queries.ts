@@ -9,6 +9,14 @@ export const GET_CATEGORY = gql`
       url_key
       description
       image
+      children_count
+      children {
+        id
+        name
+        url_path
+        url_key
+        children_count
+      }
       breadcrumbs {
         category_id
         category_name
@@ -46,6 +54,7 @@ export const GET_PRODUCTS_BY_CATEGORY = gql`
       currentPage: $currentPage
     ) {
       items {
+        __typename
         sku
         name
         url_key
@@ -195,7 +204,7 @@ export const ADD_TO_CART = gql`
     addSimpleProductsToCart(
       input: {
         cart_id: $cartId
-        cart_items: [{ sku: $sku, quantity: $quantity }]
+        cart_items: [{ data: { sku: $sku, quantity: $quantity } }]
       }
     ) {
       cart {
@@ -243,6 +252,7 @@ export const SEARCH_PRODUCTS = gql`
   query SearchProducts($search: String!, $pageSize: Int!, $currentPage: Int!) {
     products(search: $search, pageSize: $pageSize, currentPage: $currentPage) {
       items {
+        __typename
         sku
         name
         url_key
@@ -271,6 +281,7 @@ export const GET_FEATURED_PRODUCTS = gql`
   query GetFeaturedProducts($pageSize: Int!) {
     products(search: "", pageSize: $pageSize) {
       items {
+        __typename
         sku
         name
         url_key
@@ -479,6 +490,41 @@ export const PLACE_ORDER = gql`
     placeOrder(input: { cart_id: $cartId }) {
       order {
         order_number
+      }
+    }
+  }
+`
+
+export const REMOVE_FROM_CART = gql`
+  mutation RemoveFromCart($cartId: String!, $itemId: Int!) {
+    removeItemFromCart(
+      input: {
+        cart_id: $cartId
+        cart_item_id: $itemId
+      }
+    ) {
+      cart {
+        id
+        items {
+          id
+          product {
+            sku
+            name
+            image { url label }
+            price_range {
+              minimum_price {
+                regular_price { value currency }
+              }
+            }
+          }
+          quantity
+          prices {
+            row_total { value currency }
+          }
+        }
+        prices {
+          grand_total { value currency }
+        }
       }
     }
   }

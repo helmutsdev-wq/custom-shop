@@ -66,13 +66,13 @@ const currentStock = computed(() => {
 const isOutOfStock = computed(() => currentStock.value === 'OUT_OF_STOCK')
 
 async function handleAddToCart() {
-  if (isOutOfStock) return
+  if (isOutOfStock.value) return
   try {
     const addSku = selectedVariant.value?.product?.sku ?? sku
     await addToCart(addSku, 1)
     toast.value = 'Added to cart!'
     setTimeout(() => (toast.value = null), 3000)
-  } catch {
+  } catch (e) {
     toast.value = 'Failed to add to cart'
     setTimeout(() => (toast.value = null), 3000)
   }

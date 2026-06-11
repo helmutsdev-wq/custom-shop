@@ -25,6 +25,9 @@ const pending = computed(() => catPending.value || prodPending.value)
 const products = computed(() => productsData.value?.items ?? [])
 const totalCount = computed(() => productsData.value?.total_count ?? 0)
 const pageInfo = computed(() => productsData.value?.page_info)
+const subcategories = computed(() => category.value?.children ?? [])
+const hasProducts = computed(() => products.value.length > 0)
+const hasSubcategories = computed(() => subcategories.value.length > 0)
 
 const breadcrumbs = computed(() => category.value?.breadcrumbs ?? [])
 
@@ -66,16 +69,63 @@ async function handleAddToCart(sku: string) {
       <div class="mt-8 mb-8">
         <h1 class="text-3xl font-bold text-white">{{ category?.name || 'Category' }}</h1>
         <p v-if="category?.description" class="text-obscure-text-muted mt-2 max-w-3xl" v-html="category.description" />
-        <p class="text-obscure-text-muted mt-2">{{ totalCount }} products</p>
+        <p class="text-obscure-text-muted mt-2">
+          <template v-if="hasProducts">{{ totalCount }} products</template>
+          <template v-else-if="hasSubcategories">{{ subcategories.length }} subcategories</template>
+          <template v-else>Empty</template>
+        </p>
       </div>
 
-      <div v-if="products.length > 0" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div v-if="hasSubcategories && hasProducts" class="mb-10">
+        <h3 class="text-lg font-semibold text-white mb-4">Subcategories</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <NuxtLink
+            v-for="sub in subcategories"
+            :key="sub.id"
+            :to="`/category/${sub.id}`"
+            class="p-4 rounded-xl bg-obscure-bg-secondary border border-obscure-border hover:border-violet-500 hover:bg-obscure-bg-elevated transition-all text-center group"
+          >
+            <div class="w-10 h-10 rounded-lg bg-violet-500/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-violet-500/20 transition-colors">
+              <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+            </div>
+            <span class="text-sm font-medium text-white group-hover:text-violet-400 transition-colors">{{ sub.name }}</span>
+          </NuxtLink>
+        </div>
+      </div>
+
+      <div v-if="hasProducts" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
         <ProductCard
           v-for="product in products"
           :key="product.sku"
           :product="product"
           @add-to-cart="handleAddToCart"
         />
+      </div>
+
+      <div v-else-if="hasSubcategories" class="mt-4">
+        <h3 class="text-lg font-semibold text-white mb-4">Subcategories</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <NuxtLink
+            v-for="sub in subcategories"
+            :key="sub.id"
+            :to="`/category/${sub.id}`"
+            class="card group cursor-pointer"
+          >
+            <div class="p-6 text-center">
+              <div class="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-violet-500/20 transition-colors">
+                <svg class="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+              </div>
+              <h3 class="font-semibold text-white group-hover:text-violet-400 transition-colors">{{ sub.name }}</h3>
+              <p v-if="sub.children_count > 0" class="text-sm text-obscure-text-muted mt-1">
+                {{ sub.children_count }} subcategories
+              </p>
+            </div>
+          </NuxtLink>
+        </div>
       </div>
 
       <div v-else class="text-obscure-text-muted py-16 text-center">
