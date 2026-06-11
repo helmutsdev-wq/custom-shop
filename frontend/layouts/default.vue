@@ -2,8 +2,16 @@
 const route = useRoute()
 const store = useMagentoStore()
 const { storeName } = useStoreConfig()
-const isScrolled = ref(false)
+const { getCategories } = useMagento()
 const isMobileMenuOpen = ref(false)
+
+const { data: footerCategories } = await useAsyncData('nav-categories-v2', () => getCategories())
+
+const footerLinks = computed(() => {
+  return (footerCategories.value?.[0]?.children ?? []).filter(
+    (c: any) => Number(c.product_count) > 0 || Number(c.children_count) > 0,
+  )
+})
 
 useHead(() => ({
   titleTemplate: (titleChunk) => {
@@ -11,17 +19,8 @@ useHead(() => ({
   },
 }))
 
-function handleScroll() {
-  isScrolled.value = window.scrollY > 20
-}
-
 onMounted(async () => {
   await store.fetchCart()
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
 })
 
 watch(() => route.path, () => {
@@ -32,10 +31,7 @@ watch(() => route.path, () => {
 <template>
   <div class="min-h-screen flex flex-col bg-obscure-bg-primary">
     <header
-      class="sticky top-0 z-40 border-b transition-all duration-300"
-      :class="isScrolled
-        ? 'bg-obscure-bg-primary/95 backdrop-blur-md border-obscure-border'
-        : 'bg-transparent border-transparent'"
+      class="sticky top-0 z-40 border-b border-obscure-border bg-obscure-bg-secondary transition-all duration-300"
     >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 gap-4">
@@ -101,10 +97,9 @@ watch(() => route.path, () => {
           <div>
             <h4 class="font-semibold text-white mb-4">Shop</h4>
             <ul class="space-y-2 text-sm text-obscure-text-muted">
-              <li><NuxtLink to="/category/3" class="hover:text-violet-400 transition-colors">Gear</NuxtLink></li>
-              <li><NuxtLink to="/category/20" class="hover:text-violet-400 transition-colors">Women</NuxtLink></li>
-              <li><NuxtLink to="/category/21" class="hover:text-violet-400 transition-colors">Men</NuxtLink></li>
-              <li><NuxtLink to="/category/4" class="hover:text-violet-400 transition-colors">Training</NuxtLink></li>
+              <li v-for="link in footerLinks" :key="link.id">
+                <NuxtLink :to="`/category/${link.id}`" class="hover:text-violet-400 transition-colors">{{ link.name }}</NuxtLink>
+              </li>
             </ul>
           </div>
 

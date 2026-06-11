@@ -14,6 +14,13 @@ const { data: featured, pending: featPending } = await useAsyncData('featured', 
   getFeaturedProducts(8),
 )
 
+const heroCategories = computed(() => {
+  const cats = (categories.value?.[0]?.children ?? []).filter(
+    (c: any) => Number(c.product_count) > 0 || Number(c.children_count) > 0,
+  )
+  return cats.slice(0, 2)
+})
+
 async function handleAddToCart(sku: string) {
   try {
     await addToCart(sku, 1)
@@ -49,16 +56,12 @@ async function handleAddToCart(sku: string) {
 
         <div class="mt-10 flex items-center justify-center gap-4 animate-fade-in" style="animation-delay: 0.1s;">
           <NuxtLink
-            to="/category/3"
-            class="btn-primary"
+            v-for="(cat, index) in heroCategories"
+            :key="cat.id"
+            :to="`/category/${cat.id}`"
+            :class="index === 0 ? 'btn-primary' : 'btn-secondary'"
           >
-            Shop Gear
-          </NuxtLink>
-          <NuxtLink
-            to="/category/20"
-            class="btn-secondary"
-          >
-            Shop Women
+            Shop {{ cat.name }}
           </NuxtLink>
         </div>
       </div>
@@ -70,7 +73,11 @@ async function handleAddToCart(sku: string) {
           <h2 class="section-title">Featured Products</h2>
           <p class="text-obscure-text-muted mt-1">Handpicked items just for you</p>
         </div>
-        <NuxtLink to="/category/3" class="btn-ghost text-sm flex items-center gap-1">
+        <NuxtLink
+          v-if="heroCategories[0]"
+          :to="`/category/${heroCategories[0].id}`"
+          class="btn-ghost text-sm flex items-center gap-1"
+        >
           View All
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
