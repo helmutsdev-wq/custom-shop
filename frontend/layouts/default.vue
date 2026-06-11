@@ -1,99 +1,71 @@
 <script setup lang="ts">
 const route = useRoute()
 const store = useMagentoStore()
+const isScrolled = ref(false)
+const isMobileMenuOpen = ref(false)
 
-const searchQuery = ref('')
-const searchResults = ref<any[]>([])
-const searchOpen = ref(false)
-let searchDebounce: ReturnType<typeof setTimeout> | null = null
-
-async function handleSearch() {
-  const q = searchQuery.value.trim()
-  if (!q) {
-    searchResults.value = []
-    return
-  }
-  const { searchProducts } = useMagento()
-  const result = await searchProducts(q, 5)
-  searchResults.value = result?.items ?? []
-}
-
-function onSearchInput() {
-  if (searchDebounce) clearTimeout(searchDebounce)
-  searchDebounce = setTimeout(handleSearch, 300)
-}
-
-function selectProduct(sku: string) {
-  searchQuery.value = ''
-  searchResults.value = []
-  searchOpen.value = false
+function handleScroll() {
+  isScrolled.value = window.scrollY > 20
 }
 
 onMounted(async () => {
   await store.fetchCart()
+  window.addEventListener('scroll', handleScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+watch(() => route.path, () => {
+  isMobileMenuOpen.value = false
 })
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-white">
-    <header class="border-b border-gray-200">
+  <div class="min-h-screen flex flex-col bg-obscure-bg-primary">
+    <header
+      class="sticky top-0 z-40 border-b transition-all duration-300"
+      :class="isScrolled
+        ? 'bg-obscure-bg-primary/95 backdrop-blur-md border-obscure-border'
+        : 'bg-transparent border-transparent'"
+    >
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16 gap-4">
-          <NuxtLink to="/" class="text-xl font-bold tracking-tight shrink-0">
-            Custom Shop
+          <NuxtLink to="/" class="flex items-center gap-2 shrink-0 group">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-white group-hover:text-violet-400 transition-colors">
+              Obsidian
+            </span>
           </NuxtLink>
 
-          <div class="flex-1 max-w-md relative">
-            <input
-              v-model="searchQuery"
-              placeholder="Search products..."
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-              @input="onSearchInput"
-              @focus="searchOpen = true"
-              @blur="setTimeout(() => (searchOpen = false), 200)"
-            />
-            <div
-              v-if="searchOpen && searchResults.length > 0"
-              class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto"
-            >
-              <NuxtLink
-                v-for="p in searchResults"
-                :key="p.sku"
-                :to="`/product/${p.sku}`"
-                class="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 transition-colors"
-                @click="selectProduct(p.sku)"
-              >
-                <img
-                  v-if="p.small_image?.url"
-                  :src="p.small_image.url"
-                  :alt="p.small_image.label || p.name"
-                  class="w-10 h-10 object-cover rounded"
-                />
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">{{ p.name }}</p>
-                  <p class="text-xs text-gray-500">
-                    {{ p.price_range?.minimum_price?.final_price?.currency }}
-                    {{ p.price_range?.minimum_price?.final_price?.value?.toFixed(2) }}
-                  </p>
-                </div>
-              </NuxtLink>
-            </div>
+          <div class="hidden md:flex flex-1 justify-center max-w-xl">
+            <SearchBar />
           </div>
 
-          <nav class="flex items-center gap-4">
-            <NuxtLink
-              to="/cart"
-              class="relative text-sm font-medium hover:text-gray-600 transition-colors"
+          <nav class="flex items-center gap-3">
+            <CartIcon />
+
+            <button
+              @click="isMobileMenuOpen = !isMobileMenuOpen"
+              class="md:hidden p-2 rounded-lg text-obscure-text-muted hover:text-white hover:bg-obscure-bg-elevated transition-colors"
             >
-              Cart
-              <span
-                v-if="store.cartItemCount > 0"
-                class="absolute -top-2 -right-4 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center"
-              >
-                {{ store.cartItemCount > 9 ? '9+' : store.cartItemCount }}
-              </span>
-            </NuxtLink>
+              <svg v-if="!isMobileMenuOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+              <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </nav>
+        </div>
+
+        <div v-if="isMobileMenuOpen" class="md:hidden pb-4 border-t border-obscure-border mt-2 pt-4">
+          <SearchBar />
         </div>
       </div>
     </header>
@@ -102,9 +74,46 @@ onMounted(async () => {
       <slot />
     </main>
 
-    <footer class="border-t border-gray-200 py-8 mt-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
-        Custom Shop — Headless Magento 2 Demo
+    <footer class="border-t border-obscure-border py-12 mt-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2 mb-4">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <span class="text-lg font-bold text-white">Obsidian</span>
+            </div>
+            <p class="text-obscure-text-muted text-sm max-w-md">
+              A modern headless e-commerce experience powered by Magento 2 and Nuxt 3.
+              Built with Vue, TypeScript, and Tailwind CSS.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-white mb-4">Shop</h4>
+            <ul class="space-y-2 text-sm text-obscure-text-muted">
+              <li><NuxtLink to="/category/3" class="hover:text-violet-400 transition-colors">Gear</NuxtLink></li>
+              <li><NuxtLink to="/category/20" class="hover:text-violet-400 transition-colors">Women</NuxtLink></li>
+              <li><NuxtLink to="/category/21" class="hover:text-violet-400 transition-colors">Men</NuxtLink></li>
+              <li><NuxtLink to="/category/4" class="hover:text-violet-400 transition-colors">Training</NuxtLink></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-white mb-4">Account</h4>
+            <ul class="space-y-2 text-sm text-obscure-text-muted">
+              <li><NuxtLink to="/cart" class="hover:text-violet-400 transition-colors">Cart</NuxtLink></li>
+              <li><NuxtLink to="/checkout" class="hover:text-violet-400 transition-colors">Checkout</NuxtLink></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="border-t border-obscure-border mt-8 pt-8 text-center text-sm text-obscure-text-muted">
+          <p>Obsidian — Headless Magento 2 Demo. Built with Nuxt 3, Vue 3, and Tailwind CSS.</p>
+        </div>
       </div>
     </footer>
   </div>

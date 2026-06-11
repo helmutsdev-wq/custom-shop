@@ -124,12 +124,16 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
+    ports:
+      - "24678:24678"
     environment:
       NUXT_PUBLIC_MAGENTO_GRAPHQL_URL: http://nginx/graphql
       NUXT_PUBLIC_MAGENTO_MEDIA_URL: https://${APP_DOMAIN}/media
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.nuxt
+      - /app/.output
     depends_on:
       - nginx
 

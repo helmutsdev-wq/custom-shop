@@ -35,7 +35,24 @@ export default defineNuxtConfig({
   },
 
   tailwindcss: {
+    cssPath: '~/assets/css/obsidian.css',
+    configPath: 'tailwind.config.ts',
     exposeConfig: true,
+  },
+
+  vite: {
+    server: {
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 24678,
+        clientPort: 24678,
+      },
+      watch: {
+        usePolling: true,
+        interval: 1000,
+      },
+    },
   },
 
   nitro: {
