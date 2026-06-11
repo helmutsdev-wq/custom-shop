@@ -15,6 +15,14 @@ const { data: product, pending, error } = await useAsyncData(
   () => getProductDetail(sku),
 )
 
+useHead(() => ({
+  title: (product.value as any)?.meta_title || product.value?.name || sku,
+  meta: [
+    (product.value as any)?.meta_description ? { name: 'description', content: (product.value as any).meta_description } : null,
+    (product.value as any)?.meta_keyword ? { name: 'keywords', content: (product.value as any).meta_keyword } : null,
+  ].filter(Boolean),
+}))
+
 const selectedOptions = ref<Record<string, number>>({})
 const selectedVariant = ref<any>(null)
 const selectedImage = ref<string | null>(null)

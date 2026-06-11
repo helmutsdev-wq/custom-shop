@@ -15,6 +15,14 @@ const { data: category, pending: catPending } = await useAsyncData(
   () => getCategory(categoryId),
 )
 
+useHead(() => ({
+  title: (category.value as any)?.meta_title || category.value?.name || 'Category',
+  meta: [
+    (category.value as any)?.meta_description ? { name: 'description', content: (category.value as any).meta_description } : null,
+    (category.value as any)?.meta_keywords ? { name: 'keywords', content: (category.value as any).meta_keywords } : null,
+  ].filter(Boolean),
+}))
+
 const { data: productsData, pending: prodPending, refresh } = await useAsyncData(
   `products-${categoryId}-${currentPage.value}`,
   () => getProductsByCategory(categoryId, pageSize, currentPage.value),

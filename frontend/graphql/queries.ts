@@ -23,6 +23,9 @@ export const GET_CMS_PAGE = gql`
       page_layout
       url_key
       identifier
+      meta_title
+      meta_description
+      meta_keywords
     }
   }
 `
@@ -44,6 +47,9 @@ export const GET_CATEGORY = gql`
       url_key
       description
       image
+      meta_title
+      meta_description
+      meta_keywords
       children_count
       children {
         id
@@ -144,6 +150,9 @@ export const GET_PRODUCT_DETAIL = gql`
         name
         url_key
         url_suffix
+        meta_title
+        meta_description
+        meta_keyword
         description {
           html
         }

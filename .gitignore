@@ -58,3 +58,6 @@ backend/pub/media/custom_options/
 # Env
 .env
 docker/nginx/certs/
+
+# Agent instructions (local only)
+AGENTS.md

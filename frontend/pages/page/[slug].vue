@@ -8,13 +8,27 @@ const { data: page, pending, error } = await useAsyncData(
   () => getCmsPage(slug),
 )
 
+const containerClass = computed(() => {
+  switch (page.value?.page_layout) {
+    case 'cms-full-width':
+    case 'empty':
+      return ''
+    default:
+      return 'max-w-4xl mx-auto'
+  }
+})
+
 useHead(() => ({
-  title: page.value?.title || slug,
+  title: page.value?.meta_title || page.value?.title || slug,
+  meta: [
+    page.value?.meta_description ? { name: 'description', content: page.value.meta_description } : null,
+    page.value?.meta_keywords ? { name: 'keywords', content: page.value.meta_keywords } : null,
+  ].filter(Boolean),
 }))
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+  <div class="px-4 sm:px-6 lg:px-8 py-12" :class="containerClass">
     <div v-if="pending" class="space-y-4 animate-pulse">
       <div class="h-10 bg-obscure-bg-secondary rounded-lg w-64" />
       <div class="h-4 bg-obscure-bg-secondary rounded w-full" />
