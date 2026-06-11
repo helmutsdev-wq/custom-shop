@@ -43,6 +43,8 @@ watch(() => route.path, () => {
             </span>
           </NuxtLink>
 
+          <CategoryNav />
+
           <div class="hidden md:flex flex-1 justify-center max-w-xl">
             <SearchBar />
           </div>
@@ -66,6 +68,7 @@ watch(() => route.path, () => {
 
         <div v-if="isMobileMenuOpen" class="md:hidden pb-4 border-t border-obscure-border mt-2 pt-4">
           <SearchBar />
+          <CategoryNav :mobile-open="true" @navigate="isMobileMenuOpen = false" />
         </div>
       </div>
     </header>

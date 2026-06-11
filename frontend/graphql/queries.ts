@@ -40,6 +40,13 @@ export const GET_CATEGORIES = gql`
           name
           url_path
           url_key
+          children_count
+          children {
+            id
+            name
+            url_path
+            url_key
+          }
         }
       }
     }
