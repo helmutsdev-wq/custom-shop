@@ -1,8 +1,15 @@
 <script setup lang="ts">
 const route = useRoute()
 const store = useMagentoStore()
+const { storeName } = useStoreConfig()
 const isScrolled = ref(false)
 const isMobileMenuOpen = ref(false)
+
+useHead(() => ({
+  titleTemplate: (titleChunk) => {
+    return titleChunk ? `${titleChunk} — ${storeName.value}` : storeName.value
+  },
+}))
 
 function handleScroll() {
   isScrolled.value = window.scrollY > 20
@@ -34,12 +41,10 @@ watch(() => route.path, () => {
         <div class="flex items-center justify-between h-16 gap-4">
           <NuxtLink to="/" class="flex items-center gap-2 shrink-0 group">
             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <span class="text-white text-xs font-bold font-mono tracking-tighter">&lt;/&gt;</span>
             </div>
             <span class="text-xl font-bold tracking-tight text-white group-hover:text-violet-400 transition-colors">
-              Obsidian
+              {{ storeName }}
             </span>
           </NuxtLink>
 
@@ -83,11 +88,9 @@ watch(() => route.path, () => {
           <div class="md:col-span-2">
             <div class="flex items-center gap-2 mb-4">
               <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+                <span class="text-white text-xs font-bold font-mono tracking-tighter">&lt;/&gt;</span>
               </div>
-              <span class="text-lg font-bold text-white">Obsidian</span>
+              <span class="text-lg font-bold text-white">{{ storeName }}</span>
             </div>
             <p class="text-obscure-text-muted text-sm max-w-md">
               A modern headless e-commerce experience powered by Magento 2 and Nuxt 3.
@@ -115,7 +118,7 @@ watch(() => route.path, () => {
         </div>
 
         <div class="border-t border-obscure-border mt-8 pt-8 text-center text-sm text-obscure-text-muted">
-          <p>Obsidian — Headless Magento 2 Demo. Built with Nuxt 3, Vue 3, and Tailwind CSS.</p>
+          <p>{{ storeName }} — Headless Magento 2 Demo. Built with Nuxt 3, Vue 3, and Tailwind CSS.</p>
         </div>
       </div>
     </footer>

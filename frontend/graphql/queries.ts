@@ -1,5 +1,19 @@
 import gql from 'graphql-tag'
 
+export const GET_STORE_CONFIG = gql`
+  query GetStoreConfig {
+    storeConfig {
+      store_name
+      store_code
+      copyright
+      logo_alt
+      logo_width
+      logo_height
+      head_shortcut_icon
+    }
+  }
+`
+
 export const GET_CATEGORY = gql`
   query GetCategory($id: Int!) {
     category(id: $id) {

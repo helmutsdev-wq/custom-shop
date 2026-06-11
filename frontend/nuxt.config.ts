@@ -1,4 +1,13 @@
 export default defineNuxtConfig({
+  app: {
+    head: {
+      title: 'Loading...',
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      ],
+    },
+  },
+
   devtools: { enabled: true },
 
   modules: [

@@ -2,7 +2,8 @@
 import type { Product } from '~/types/magento'
 
 const { getCategories, getFeaturedProducts, addToCart } = useMagento()
-const store = useMagentoStore()
+const storeData = useMagentoStore()
+const { storeName } = useStoreConfig()
 const toast = ref<string | null>(null)
 
 const { data: categories, pending: catPending } = await useAsyncData('categories', () =>
@@ -37,7 +38,7 @@ async function handleAddToCart(sku: string) {
             Headless Commerce Demo
           </span>
           <h1 class="text-5xl md:text-7xl font-bold tracking-tight">
-            <span class="text-gradient">Obsidian</span>
+            <span class="text-gradient">{{ storeName }}</span>
             <span class="text-white"> Store</span>
           </h1>
           <p class="mt-6 text-lg text-obscure-text-secondary max-w-2xl mx-auto">

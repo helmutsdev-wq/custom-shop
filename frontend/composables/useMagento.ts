@@ -1,4 +1,5 @@
 import {
+  GET_STORE_CONFIG,
   GET_CATEGORIES,
   GET_CATEGORY,
   GET_PRODUCTS_BY_CATEGORY,
@@ -18,6 +19,14 @@ export function useMagento() {
   function getClient() {
     if (!client.value) throw new Error('Apollo client not available')
     return client.value
+  }
+
+  async function getStoreConfig() {
+    const result = await getClient().query({
+      query: GET_STORE_CONFIG,
+      fetchPolicy: 'no-cache',
+    })
+    return result?.data?.storeConfig ?? null
   }
 
   async function getCategories() {
@@ -155,5 +164,6 @@ export function useMagento() {
     setShippingAddress,
     setShippingMethod,
     placeOrder,
+    getStoreConfig,
   }
 }
