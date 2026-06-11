@@ -97,7 +97,7 @@ const { data: featured, pending: featPending } = await useAsyncData('featured', 
 
         <div v-else-if="categories && categories.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <NuxtLink
-            v-for="cat in categories"
+            v-for="cat in categories[0]?.children ?? []"
             :key="cat.id"
             :to="`/category/${cat.id}`"
             class="block p-6 bg-white border border-gray-200 rounded-lg hover:border-gray-400 hover:shadow-sm transition-all"

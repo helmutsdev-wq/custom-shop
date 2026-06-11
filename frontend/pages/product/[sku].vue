@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const route = useRoute()
 const sku = String(route.params.sku)
+const config = useRuntimeConfig()
+const mediaUrl = config.public.magentoMediaUrl
 
 const { getProductDetail } = useMagento()
 const store = useMagentoStore()
@@ -11,9 +13,30 @@ const { data: product, pending, error } = await useAsyncData(
   () => getProductDetail(sku),
 )
 
+const selectedOptions = ref<Record<string, string>>({})
+const selectedVariant = ref<any>(null)
+
+function isConfigurableProduct(p: any): p is any {
+  return p?.__typename === 'ConfigurableProduct'
+}
+
+function getSelectedVariant(p: any) {
+  if (!isConfigurableProduct(p) || !p.variants?.length) return null
+  return p.variants.find((v: any) =>
+    v.attributes?.every((a: any) => selectedOptions.value[a.code] === a.value_index)
+  ) ?? null
+}
+
+watch(selectedOptions, () => {
+  if (isConfigurableProduct(product.value)) {
+    selectedVariant.value = getSelectedVariant(product.value)
+  }
+}, { deep: true })
+
 async function handleAddToCart() {
   try {
-    await store.addToCart(sku, 1)
+    const addSku = selectedVariant.value?.product?.sku ?? sku
+    await store.addToCart(addSku, 1)
     toast.value = `Added ${product.value?.name} to cart!`
     setTimeout(() => (toast.value = null), 3000)
   } catch {
@@ -42,9 +65,9 @@ async function handleAddToCart() {
       <div>
         <div class="aspect-square bg-gray-50 rounded-lg overflow-hidden">
           <img
-            v-if="product.image?.url"
-            :src="product.image.url"
-            :alt="product.image.label || product.name"
+            v-if="selectedVariant?.product?.image?.url || product.image?.url"
+            :src="selectedVariant?.product?.image?.url ?? product.image?.url"
+            :alt="selectedVariant?.product?.image?.label ?? product.image?.label ?? product.name"
             class="w-full h-full object-cover"
           />
           <div v-else class="w-full h-full flex items-center justify-center text-gray-300">
@@ -56,7 +79,7 @@ async function handleAddToCart() {
           <img
             v-for="media in product.media_gallery_entries"
             :key="media.id"
-            :src="media.url"
+            :src="`${mediaUrl}/catalog/product${media.file}`"
             :alt="media.label || product.name"
             class="aspect-square object-cover rounded border border-gray-200 cursor-pointer hover:border-gray-400"
           />
@@ -67,16 +90,40 @@ async function handleAddToCart() {
         <h1 class="text-3xl font-bold">{{ product.name }}</h1>
 
         <p class="mt-4 text-2xl font-semibold">
-          {{ product.price_range?.minimum_price?.final_price?.currency }}
-          {{ product.price_range?.minimum_price?.final_price?.value?.toFixed(2) }}
+          {{ selectedVariant?.product?.price_range?.minimum_price?.final_price?.currency ?? product.price_range?.minimum_price?.final_price?.currency }}
+          {{ (selectedVariant?.product?.price_range?.minimum_price?.final_price?.value ?? product.price_range?.minimum_price?.final_price?.value)?.toFixed(2) }}
         </p>
 
         <p
           class="mt-2 text-sm"
-          :class="product.stock_status === 'IN_STOCK' ? 'text-green-600' : 'text-red-500'"
+          :class="(selectedVariant?.product?.stock_status ?? product.stock_status) === 'IN_STOCK' ? 'text-green-600' : 'text-red-500'"
         >
-          {{ product.stock_status === 'IN_STOCK' ? 'In Stock' : 'Out of Stock' }}
+          {{ (selectedVariant?.product?.stock_status ?? product.stock_status) === 'IN_STOCK' ? 'In Stock' : 'Out of Stock' }}
         </p>
+
+        <div v-if="isConfigurableProduct(product) && product.configurable_options?.length" class="mt-6 space-y-4">
+          <div v-for="option in product.configurable_options" :key="option.attribute_code" class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">{{ option.label }}</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="value in option.values"
+                :key="value.value_index"
+                type="button"
+                @click="selectedOptions[option.attribute_code] = value.value_index"
+                :class="[
+                  'px-3 py-2 text-sm rounded border transition-colors',
+                  selectedOptions[option.attribute_code] === value.value_index
+                    ? 'bg-black text-white border-black'
+                    : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                ]"
+                :title="value.label"
+                :style="value.swatch_data?.value && value.swatch_data.value.startsWith('#') ? { backgroundColor: value.swatch_data.value, borderColor: value.swatch_data.value } : undefined"
+              >
+                {{ value.swatch_data?.value && !value.swatch_data.value.startsWith('#') ? '' : value.label }}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <div class="mt-6 prose prose-sm" v-if="product.short_description?.html" v-html="product.short_description.html" />
 
@@ -84,7 +131,7 @@ async function handleAddToCart() {
 
         <button
           class="mt-8 w-full bg-black text-white py-3 px-6 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          :disabled="product.stock_status !== 'IN_STOCK'"
+          :disabled="(selectedVariant?.product?.stock_status ?? product.stock_status) !== 'IN_STOCK'"
           @click="handleAddToCart"
         >
           Add to Cart

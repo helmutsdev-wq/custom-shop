@@ -123,7 +123,6 @@ export const GET_PRODUCT_DETAIL = gql`
           label
           position
           file
-          url
           types
         }
         image {
@@ -145,10 +144,6 @@ export const GET_PRODUCT_DETAIL = gql`
           url_path
           url_key
         }
-        attributes {
-          attribute_code
-          value
-        }
         ... on ConfigurableProduct {
           configurable_options {
             attribute_code
@@ -158,7 +153,6 @@ export const GET_PRODUCT_DETAIL = gql`
               value_index
               label
               swatch_data {
-                type
                 value
               }
             }
@@ -184,14 +178,10 @@ export const GET_PRODUCT_DETAIL = gql`
                 label
               }
               stock_status
-              attributes {
-                attribute_code
-                value
-              }
             }
             attributes {
-              attribute_code
-              value
+              code
+              value_index
             }
           }
         }
