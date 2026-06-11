@@ -1,5 +1,7 @@
 import {
   GET_STORE_CONFIG,
+  GET_CMS_PAGE,
+  GET_THEME_CONFIG,
   GET_CATEGORIES,
   GET_CATEGORY,
   GET_PRODUCTS_BY_CATEGORY,
@@ -27,6 +29,22 @@ export function useMagento() {
       fetchPolicy: 'no-cache',
     })
     return result?.data?.storeConfig ?? null
+  }
+
+  async function getCmsPage(identifier: string) {
+    const result = await getClient().query({
+      query: GET_CMS_PAGE,
+      variables: { identifier },
+    })
+    return result?.data?.cmsPage ?? null
+  }
+
+  async function getThemeConfig() {
+    const result = await getClient().query({
+      query: GET_THEME_CONFIG,
+      fetchPolicy: 'no-cache',
+    })
+    return result?.data?.helmutsdevThemeConfig ?? null
   }
 
   async function getCategories() {
@@ -165,5 +183,7 @@ export function useMagento() {
     setShippingMethod,
     placeOrder,
     getStoreConfig,
+    getCmsPage,
+    getThemeConfig,
   }
 }

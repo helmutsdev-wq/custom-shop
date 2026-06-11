@@ -14,6 +14,27 @@ export const GET_STORE_CONFIG = gql`
   }
 `
 
+export const GET_CMS_PAGE = gql`
+  query GetCmsPage($identifier: String!) {
+    cmsPage(identifier: $identifier) {
+      title
+      content
+      content_heading
+      page_layout
+      url_key
+      identifier
+    }
+  }
+`
+
+export const GET_THEME_CONFIG = gql`
+  query GetThemeConfig {
+    helmutsdevThemeConfig {
+      active_theme
+    }
+  }
+`
+
 export const GET_CATEGORY = gql`
   query GetCategory($id: Int!) {
     category(id: $id) {
@@ -48,18 +69,21 @@ export const GET_CATEGORIES = gql`
         name
         url_path
         url_key
+        product_count
         children_count
         children {
           id
           name
           url_path
           url_key
+          product_count
           children_count
           children {
             id
             name
             url_path
             url_key
+            product_count
           }
         }
       }

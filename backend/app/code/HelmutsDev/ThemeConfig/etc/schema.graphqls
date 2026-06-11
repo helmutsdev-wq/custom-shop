@@ -1,0 +1,7 @@
+type Query {
+    helmutsdevThemeConfig: HelmutsdevThemeConfig @resolver(class: "HelmutsDev\\ThemeConfig\\Model\\Resolver\\ThemeConfigResolver") @doc(description: "Returns the helmutsDev theme configuration")
+}
+
+type HelmutsdevThemeConfig @doc(description: "helmutsDev theme configuration") {
+    active_theme: String @doc(description: "The currently active theme (dark or light)")
+}

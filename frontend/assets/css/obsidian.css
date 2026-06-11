@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ── Obsidian Dark ── */
+:root,
+[data-theme="dark"] {
   --obscure-bg-primary: #0a0a0f;
   --obscure-bg-secondary: #12121a;
   --obscure-bg-elevated: #1a1a24;
@@ -22,6 +24,29 @@
   --obscure-success: #22c55e;
   --obscure-error: #ef4444;
   --obscure-warning: #f59e0b;
+}
+
+/* ── Obsidian Light ── */
+[data-theme="light"] {
+  --obscure-bg-primary: #f8f9fb;
+  --obscure-bg-secondary: #eef0f4;
+  --obscure-bg-elevated: #e2e5ea;
+  --obscure-bg-card: #ffffff;
+
+  --obscure-text-primary: #0f1115;
+  --obscure-text-secondary: #3a3d45;
+  --obscure-text-muted: #6b7280;
+
+  --obscure-accent-primary: #7c3aed;
+  --obscure-accent-secondary: #6d28d9;
+  --obscure-accent-glow: rgba(124, 58, 237, 0.15);
+
+  --obscure-border: #d4d8df;
+  --obscure-border-hover: #b0b7c3;
+
+  --obscure-success: #16a34a;
+  --obscure-error: #dc2626;
+  --obscure-warning: #d97706;
 }
 
 @layer base {

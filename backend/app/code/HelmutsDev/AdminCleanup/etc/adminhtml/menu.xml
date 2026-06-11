@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <!-- Content → Design (headless handles all design/theme concerns) -->
+        <remove id="Magento_Theme::design_config" />
+        <remove id="Magento_Backend::system_design_schedule" />
+
+        <!-- Content → Elements → Widgets (Magento layout engine, not used in headless) -->
+        <remove id="Magento_Widget::cms_widget_instance" />
+
+        <!-- Marketing → SEO & Search → Site Map (headless generates its own sitemap) -->
+        <remove id="Magento_Sitemap::catalog_sitemap" />
+    </menu>
+</config>

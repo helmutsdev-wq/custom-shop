@@ -16,11 +16,18 @@ const emit = defineEmits<{
 const route = useRoute()
 const { getCategories } = useMagento()
 
-const { data: categories } = await useAsyncData('nav-categories', () => getCategories())
+const { data: categories } = await useAsyncData('nav-categories-v2', () => getCategories())
 
 const topCategories = computed<Category[]>(() => {
-  return categories.value?.[0]?.children ?? []
+  return (categories.value?.[0]?.children ?? []).filter(
+    (cat: any) => Number(cat.product_count) > 0 || Number(cat.children_count) > 0,
+  )
 })
+
+const MAX_VISIBLE = 5
+const visibleCategories = computed(() => topCategories.value.slice(0, MAX_VISIBLE))
+const overflowCategories = computed(() => topCategories.value.slice(MAX_VISIBLE))
+const hasOverflow = computed(() => overflowCategories.value.length > 0)
 
 const activeDropdown = ref<number | null>(null)
 const expandedMobile = ref<Set<number>>(new Set())
@@ -65,10 +72,10 @@ function handleNavigate() {
     <!-- Desktop Navigation -->
     <nav class="hidden lg:flex items-center gap-1">
       <button
-        v-for="cat in topCategories"
+        v-for="cat in visibleCategories"
         :key="cat.id"
         class="relative px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200"
-        :class="isAncestorActive(cat)
+        :class="isAncestorActive(cat as Category)
           ? 'text-violet-400 bg-violet-500/10'
           : 'text-obscure-text-secondary hover:text-white hover:bg-obscure-bg-elevated'"
         @mouseenter="openDropdown(Number(cat.id))"
@@ -79,7 +86,6 @@ function handleNavigate() {
           {{ cat.name }}
         </NuxtLink>
 
-        <!-- Dropdown Panel -->
         <Transition
           enter-active-class="transition-all duration-200 ease-out"
           enter-from-class="opacity-0 translate-y-2"
@@ -89,13 +95,13 @@ function handleNavigate() {
           leave-to-class="opacity-0 translate-y-2"
         >
           <div
-            v-if="activeDropdown === Number(cat.id) && (cat.children?.length ?? 0) > 0"
+            v-if="activeDropdown === Number(cat.id) && ((cat as Category).children?.length ?? 0) > 0"
             class="absolute top-full left-0 mt-1 bg-obscure-bg-secondary border border-obscure-border rounded-xl shadow-xl shadow-black/20 min-w-[480px] z-50"
             @mouseenter="openDropdown(Number(cat.id))"
             @mouseleave="scheduleClose"
           >
-            <div class="p-6 grid gap-6" :style="{ gridTemplateColumns: `repeat(${Math.min(cat.children?.length ?? 1, 4)}, 1fr)` }">
-              <div v-for="child in cat.children" :key="child.id" class="min-w-0">
+            <div class="p-6 grid gap-6" :style="{ gridTemplateColumns: `repeat(${Math.min((cat as Category).children?.length ?? 1, 4)}, 1fr)` }">
+              <div v-for="child in ((cat as Category).children ?? []).filter((c: any) => Number(c.product_count) > 0 || Number(c.children_count) > 0)" :key="child.id" class="min-w-0">
                 <NuxtLink
                   :to="`/category/${child.id}`"
                   class="block text-sm font-semibold text-white hover:text-violet-400 transition-colors mb-2"
@@ -103,9 +109,9 @@ function handleNavigate() {
                 >
                   {{ child.name }}
                 </NuxtLink>
-                <div v-if="(child.children?.length ?? 0) > 0" class="space-y-1">
+                <div v-if="((child as Category).children?.length ?? 0) > 0" class="space-y-1">
                   <NuxtLink
-                    v-for="grandchild in child.children"
+                    v-for="grandchild in (child as Category).children"
                     :key="grandchild.id"
                     :to="`/category/${grandchild.id}`"
                     class="block text-sm text-obscure-text-muted hover:text-violet-400 transition-colors truncate"
@@ -116,6 +122,47 @@ function handleNavigate() {
                 </div>
               </div>
             </div>
+          </div>
+        </Transition>
+      </button>
+
+      <!-- More dropdown for overflow -->
+      <button
+        v-if="hasOverflow"
+        class="relative px-3 py-2 text-sm font-medium rounded-lg text-obscure-text-secondary hover:text-white hover:bg-obscure-bg-elevated transition-all duration-200"
+        @mouseenter="activeDropdown = -1"
+        @mouseleave="scheduleClose"
+      >
+        <span class="flex items-center gap-1">
+          More
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
+
+        <Transition
+          enter-active-class="transition-all duration-200 ease-out"
+          enter-from-class="opacity-0 translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition-all duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 translate-y-2"
+        >
+          <div
+            v-if="activeDropdown === -1"
+            class="absolute top-full left-0 mt-1 bg-obscure-bg-secondary border border-obscure-border rounded-xl shadow-xl shadow-black/20 z-50 py-3"
+            @mouseenter="activeDropdown = -1"
+            @mouseleave="scheduleClose"
+          >
+            <NuxtLink
+              v-for="cat in overflowCategories"
+              :key="cat.id"
+              :to="`/category/${cat.id}`"
+              class="block px-5 py-2 text-sm text-obscure-text-secondary hover:text-white hover:bg-obscure-bg-elevated transition-colors whitespace-nowrap"
+              @click="handleNavigate"
+            >
+              {{ cat.name }}
+            </NuxtLink>
           </div>
         </Transition>
       </button>

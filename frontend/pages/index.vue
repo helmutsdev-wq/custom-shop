@@ -6,7 +6,7 @@ const storeData = useMagentoStore()
 const { storeName } = useStoreConfig()
 const toast = ref<string | null>(null)
 
-const { data: categories, pending: catPending } = await useAsyncData('categories', () =>
+const { data: categories, pending: catPending } = await useAsyncData('home-categories-v2', () =>
   getCategories(),
 )
 
@@ -114,7 +114,7 @@ async function handleAddToCart(sku: string) {
 
         <div v-else-if="categories && categories.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <NuxtLink
-            v-for="(cat, index) in categories[0]?.children ?? []"
+            v-for="(cat, index) in (categories[0]?.children ?? []).filter((c: any) => Number(c.product_count) > 0 || Number(c.children_count) > 0)"
             :key="cat.id"
             :to="`/category/${cat.id}`"
             class="card group cursor-pointer"

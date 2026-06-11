@@ -68,6 +68,10 @@ setup-upgrade: ## Run setup upgrade and compile
 deploy-static: ## Deploy static content
 	docker compose exec php php bin/magento setup:static-content:deploy -f
 
+admin-fix: ## Fix broken admin styles after module changes (deploy static + flush cache)
+	docker compose exec php php bin/magento setup:static-content:deploy -f
+	docker compose exec php php bin/magento cache:flush
+
 module-enable: ## Enable a module (usage: make module-enable MOD=My_Module)
 	docker compose exec php php bin/magento module:enable $(MOD)
 

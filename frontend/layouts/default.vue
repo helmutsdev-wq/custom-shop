@@ -115,6 +115,15 @@ watch(() => route.path, () => {
               <li><NuxtLink to="/checkout" class="hover:text-violet-400 transition-colors">Checkout</NuxtLink></li>
             </ul>
           </div>
+
+          <div>
+            <h4 class="font-semibold text-white mb-4">Info</h4>
+            <ul class="space-y-2 text-sm text-obscure-text-muted">
+              <li><NuxtLink to="/page/about-us" class="hover:text-violet-400 transition-colors">About Us</NuxtLink></li>
+              <li><NuxtLink to="/page/customer-service" class="hover:text-violet-400 transition-colors">Customer Service</NuxtLink></li>
+              <li><NuxtLink to="/page/privacy-policy-cookie-restriction-mode" class="hover:text-violet-400 transition-colors">Privacy Policy</NuxtLink></li>
+            </ul>
+          </div>
         </div>
 
         <div class="border-t border-obscure-border mt-8 pt-8 text-center text-sm text-obscure-text-muted">
